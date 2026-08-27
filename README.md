@@ -201,6 +201,40 @@ Optionally save the three trained checkpoints:
 python production_planning_spo.py --checkpoint-dir checkpoints
 ```
 
+## Validated GitHub Actions run
+
+GitHub Actions run `33099428552` completed successfully on Ubuntu 24.04 / CPython 3.12.14 with CPU PyTorch 2.13.0, NumPy 2.5.2, and SciPy 1.18.1. The solver/SPO+ self-test and all **8 regression tests** passed before the end-to-end smoke experiment.
+
+The smoke configuration used 192 training, 64 validation, and 64 test contexts, with 4 common MSE warm-start epochs and 4 fine-tuning epochs. It produced:
+
+```text
+standard MSE
+  cost RMSE                 11.151
+  mean regret              177.326
+  mean relative regret       1.023%
+
+decision-activity weighted MSE
+  cost RMSE                 11.143
+  mean regret              178.799
+  mean relative regret       1.031%
+
+SPO+
+  cost RMSE                 11.540
+  mean regret              171.971
+  mean relative regret       0.989%
+```
+
+Paired smoke differences:
+
+```text
+SPO+ - MSE       = -5.355   95% CI [-12.198, 1.487]
+SPO+ - weighted  = -6.828   95% CI [-14.083, 0.427]
+```
+
+Again, the smoke run shows the intended pattern—higher prediction RMSE can coexist with lower mean decision regret—but the confidence intervals include zero. CI validates the optimization/learning mechanics and reproducibility; it is not used as a statistical superiority claim.
+
+Run: https://github.com/jorsacademy/predict-then-optimize-production-planning-spo-plus-pytorch/actions/runs/33099428552
+
 ## Exactness and claims
 
 HiGHS solves each declared continuous production-planning LP to solver optimality subject to numerical tolerances. This gives an exact downstream optimization oracle for the benchmark LP.
