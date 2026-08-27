@@ -1,0 +1,41 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install CPU PyTorch and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.3"
+          pip install -r requirements.txt
+
+      - name: Run solver and SPO+ self-test
+        run: python production_planning_spo.py --self-test
+
+      - name: Run regression suite
+        run: python -m unittest discover -s tests -v
+
+      - name: Run end-to-end predict-then-optimize smoke experiment
+        run: |
+          python production_planning_spo.py \
+            --seed 42 \
+            --train-samples 192 \
+            --validation-samples 64 \
+            --test-samples 64 \
+            --pretrain-epochs 4 \
+            --finetune-epochs 4 \
+            --batch-size 16
